@@ -1,0 +1,92 @@
+{
+    "info": {
+      "name": "Pratica04",
+      "description": "Collection de testes da API de tarefas",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+      {
+        "name": "Listar todas as tarefas",
+        "request": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "http://localhost:3000/tarefas",
+            "protocol": "http",
+            "host": ["localhost"],
+            "port": "3000",
+            "path": ["tarefas"]
+          }
+        }
+      },
+      {
+        "name": "Criar nova tarefa",
+        "request": {
+          "method": "POST",
+          "header": [
+            { "key": "Content-Type", "value": "application/json" }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{ \"nome\": \"Nova tarefa\" }"
+          },
+          "url": {
+            "raw": "http://localhost:3000/tarefas",
+            "protocol": "http",
+            "host": ["localhost"],
+            "port": "3000",
+            "path": ["tarefas"]
+          }
+        }
+      },
+      {
+        "name": "Buscar tarefa por ID",
+        "request": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "http://localhost:3000/tarefas/1",
+            "protocol": "http",
+            "host": ["localhost"],
+            "port": "3000",
+            "path": ["tarefas", "1"]
+          }
+        }
+      },
+      {
+        "name": "Atualizar tarefa",
+        "request": {
+          "method": "PUT",
+          "header": [
+            { "key": "Content-Type", "value": "application/json" }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{ \"nome\": \"Tarefa atualizada\", \"concluida\": true }"
+          },
+          "url": {
+            "raw": "http://localhost:3000/tarefas/1",
+            "protocol": "http",
+            "host": ["localhost"],
+            "port": "3000",
+            "path": ["tarefas", "1"]
+          }
+        }
+      },
+      {
+        "name": "Remover tarefa",
+        "request": {
+          "method": "DELETE",
+          "header": [],
+          "url": {
+            "raw": "http://localhost:3000/tarefas/1",
+            "protocol": "http",
+            "host": ["localhost"],
+            "port": "3000",
+            "path": ["tarefas", "1"]
+          }
+        }
+      }
+    ]
+  }
+  
