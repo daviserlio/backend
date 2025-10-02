@@ -36,7 +36,7 @@ describe("POST /tarefas", () => {
 
 describe("GET /tarefas/:id", () => {
   it("deve retornar status 200 e a tarefa em JSON (busca pelo id criado)", async () => {
-    // Usa o ID salvo
+  
     const response = await request(app).get(`/tarefas/${createdTaskId}`);
     expect(response.statusCode).toBe(200);
     expect(response.type).toBe("application/json");
