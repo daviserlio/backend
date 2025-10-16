@@ -1,4 +1,4 @@
-// modelo.js
+
 const { ObjectId } = require('mongodb');
 const { conectarDb } = require('./database');
 
