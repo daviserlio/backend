@@ -20,7 +20,7 @@ async function atualizarTarefa(nome, concluida) {
   await tarefa.init();
   const encontrado = await tarefa.buscar();
   if (!encontrado) return null;
-  // atualizar propriedades
+  
   tarefa.concluida = (concluida === 'true' || concluida === true);
   await tarefa.alterar();
   return tarefa;
