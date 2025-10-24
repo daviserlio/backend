@@ -1,80 +1,129 @@
-const request = require('supertest');
+const supertest = require('supertest');
 const app = require('../app');
+const request = supertest(app);
 
 let produtoId;
 
-describe('/produtos API', () => {
-  
-  test('POST /produtos - sucesso', async () => {
-    const res = await request(app)
-      .post('/produtos')
-      .send({ nome: 'Laranja', preco: 10.0 });
-    
-    expect(res.statusCode).toBe(201);
-    expect(res.body).toHaveProperty('_id');
-    expect(res.body.nome).toBe('Laranja');
-    expect(res.body.preco).toBe(10.0);
+describe('Testes para o recurso /produtos', () => {
 
-    produtoId = res.body._id;
+  test('POST /produtos deve retornar 201 e criar um novo produto', async () => {
+    const novoProduto = { nome: 'Laranja', preco: 10.0 };
+    const response = await request.post('/produtos')
+      .send(novoProduto)
+      .expect('Content-Type', /json/)
+      .expect(201);
+
+    expect(response.body).toHaveProperty('_id');
+    expect(response.body.nome).toBe('Laranja');
+    expect(response.body.preco).toBe(10.0);
+
+    produtoId = response.body._id;
   });
 
-  test('POST /produtos - erro', async () => {
-    const res = await request(app).post('/produtos').send({});
-    expect(res.statusCode).toBe(422);
-    expect(res.body.msg).toBe('Nome e preço do produto são obrigatórios');
+  test('POST /produtos sem corpo deve retornar 422', async () => {
+    const response = await request.post('/produtos')
+      .send({})
+      .expect('Content-Type', /json/)
+      .expect(422);
+
+    expect(response.body).toHaveProperty('msg', 'Nome e preço do produto são obrigatórios');
   });
 
-  
-  test('GET /produtos', async () => {
-    const res = await request(app).get('/produtos');
-    expect(res.statusCode).toBe(200);
-    expect(Array.isArray(res.body)).toBe(true);
+  test('GET /produtos deve retornar 200 e uma lista de produtos', async () => {
+    const response = await request.get('/produtos')
+      .expect('Content-Type', /json/)
+      .expect(200);
+
+    expect(Array.isArray(response.body)).toBe(true);
+    expect(response.body.length).toBeGreaterThan(0);
   });
 
- 
-  test('GET /produtos/:id - sucesso', async () => {
-    const res = await request(app).get(`/produtos/${produtoId}`);
-    expect(res.statusCode).toBe(200);
-    expect(res.body).toHaveProperty('_id', produtoId);
+  test('GET /produtos/:id deve retornar 200 e o produto correto', async () => {
+    const response = await request.get(`/produtos/${produtoId}`)
+      .expect('Content-Type', /json/)
+      .expect(200);
+
+    expect(response.body).toHaveProperty('_id', produtoId);
+    expect(response.body).toHaveProperty('nome', 'Laranja');
+    expect(response.body).toHaveProperty('preco', 10.0);
   });
 
-  test('GET /produtos/:id - parâmetro inválido', async () => {
-    const res = await request(app).get('/produtos/0');
-    expect(res.statusCode).toBe(400);
-    expect(res.body.msg).toBe('Parâmetro inválido');
+  test('GET /produtos/0 deve retornar 400 por ID inválido', async () => {
+    const response = await request.get('/produtos/0')
+      .expect('Content-Type', /json/)
+      .expect(400);
+
+    expect(response.body).toHaveProperty('msg', 'Parâmetro inválido');
   });
 
-  test('GET /produtos/:id - não encontrado', async () => {
-    const res = await request(app).get('/produtos/000000000000000000000000');
-    expect(res.statusCode).toBe(404);
-    expect(res.body.msg).toBe('Produto não encontrado');
+  test('GET /produtos/000000000000000000000000 deve retornar 404', async () => {
+    const response = await request.get('/produtos/000000000000000000000000')
+      .expect('Content-Type', /json/)
+      .expect(404);
+
+    expect(response.body).toHaveProperty('msg', 'Produto não encontrado');
   });
 
-  
-  test('PUT /produtos/:id - sucesso', async () => {
-    const res = await request(app)
-      .put(`/produtos/${produtoId}`)
-      .send({ nome: 'Laranja Pera', preco: 18.0 });
-    expect(res.statusCode).toBe(200);
-    expect(res.body.nome).toBe('Laranja Pera');
-    expect(res.body.preco).toBe(18.0);
+  test('PUT /produtos/:id deve retornar 200 e o produto atualizado', async () => {
+    const dadosAtualizados = { nome: 'Laranja Pera', preco: 18.00 };
+    const response = await request.put(`/produtos/${produtoId}`)
+      .send(dadosAtualizados)
+      .expect('Content-Type', /json/)
+      .expect(200);
+
+    expect(response.body).toHaveProperty('_id', produtoId);
+    expect(response.body).toHaveProperty('nome', 'Laranja Pera');
+    expect(response.body).toHaveProperty('preco', 18.00);
   });
 
-  test('PUT /produtos/:id - erro', async () => {
-    const res = await request(app).put(`/produtos/${produtoId}`).send({});
-    expect(res.statusCode).toBe(422);
-    expect(res.body.msg).toBe('Nome e preço do produto são obrigatórios');
+  test('PUT /produtos/:id sem corpo deve retornar 422', async () => {
+    const response = await request.put(`/produtos/${produtoId}`)
+      .send({})
+      .expect('Content-Type', /json/)
+      .expect(422);
+
+    expect(response.body).toHaveProperty('msg', 'Nome e preço do produto são obrigatórios');
   });
 
+  test('PUT /produtos/0 deve retornar 400 por ID inválido', async () => {
+    const response = await request.put('/produtos/0')
+      .send({ nome: 'Teste', preco: 1 })
+      .expect('Content-Type', /json/)
+      .expect(400);
 
-  test('DELETE /produtos/:id - sucesso', async () => {
-    const res = await request(app).delete(`/produtos/${produtoId}`);
-    expect(res.statusCode).toBe(204);
+    expect(response.body).toHaveProperty('msg', 'Parâmetro inválido');
   });
 
-  test('DELETE /produtos/:id - parâmetro inválido', async () => {
-    const res = await request(app).delete('/produtos/0');
-    expect(res.statusCode).toBe(400);
-    expect(res.body.msg).toBe('Parâmetro inválido');
+  test('PUT /produtos/000000000000000000000000 deve retornar 404', async () => {
+    const response = await request.put('/produtos/000000000000000000000000')
+      .send({ nome: 'Teste', preco: 1 })
+      .expect('Content-Type', /json/)
+      .expect(404);
+
+    expect(response.body).toHaveProperty('msg', 'Produto não encontrado');
+  });
+
+  test('DELETE /produtos/:id deve retornar 204 e remover o produto', async () => {
+    await request.delete(`/produtos/${produtoId}`)
+      .expect(204);
+
+    await request.get(`/produtos/${produtoId}`)
+        .expect(404);
+  });
+
+  test('DELETE /produtos/0 deve retornar 400 por ID inválido', async () => {
+    const response = await request.delete('/produtos/0')
+      .expect('Content-Type', /json/)
+      .expect(400);
+
+    expect(response.body).toHaveProperty('msg', 'Parâmetro inválido');
+  });
+
+  test('DELETE /produtos/:id para produto já removido deve retornar 404', async () => {
+    const response = await request.delete(`/produtos/${produtoId}`)
+      .expect('Content-Type', /json/)
+      .expect(404);
+
+    expect(response.body).toHaveProperty('msg', 'Produto não encontrado');
   });
 });
