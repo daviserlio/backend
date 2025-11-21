@@ -1,0 +1,50 @@
+const { cifrarSenha, gerarToken, compararSenha } = require("../middlewares/authMiddleware");
+const Usuario = require("../models/usuariosModel");
+
+async function criar(req, res) {
+  try {
+    const senhaCifrada = cifrarSenha(req.body.senha);
+
+    const novoUsuario = await Usuario.create({
+      email: req.body.email,
+      senha: senhaCifrada
+    });
+
+    return res.status(201).json({
+      _id: novoUsuario._id,
+      email: novoUsuario.email
+    });
+  } catch (e) {
+    return res.status(422).json({ msg: "Email e Senha são obrigatórios" });
+  }
+}
+
+async function entrar(req, res) {
+  const usuarioEncontrado = await Usuario.findOne({ email: req.body.usuario });
+
+  if (!usuarioEncontrado) {
+    return res.status(401).json({ msg: "Credenciais inválidas" });
+  }
+
+  const valida = compararSenha(req.body.senha, usuarioEncontrado.senha);
+
+  if (!valida) {
+    return res.status(401).json({ msg: "Credenciais inválidas" });
+  }
+
+  const token = gerarToken({ email: req.body.usuario });
+
+  return res.status(200).json({ token });
+}
+
+async function renovar(req, res) {
+  const tokenNovo = gerarToken({ email: req.usuario });
+  return res.status(200).json({ token: tokenNovo });
+}
+
+async function remover(req, res) {
+  await Usuario.findOneAndDelete({ _id: req.params.id });
+  return res.status(204).send();
+}
+
+module.exports = { criar, entrar, renovar, remover };

@@ -1,0 +1,170 @@
+openapi: 3.0.0
+
+info:
+  title: Prática 10 - API de Usuários
+  version: 1.0.0
+  description: >
+    API REST da Prática 10: criação de usuário, login, renovação de token
+    e exclusão com autenticação JWT.
+
+servers:
+  - url: http://localhost:3000
+    description: Servidor local
+
+tags:
+  - name: usuarios
+    description: Endpoints relacionados a usuários
+
+paths:
+  /usuarios:
+    post:
+      tags:
+        - usuarios
+      summary: Criar novo usuário
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UsuarioCreate"
+      responses:
+        "201":
+          description: Usuário criado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UsuarioResponse"
+        "422":
+          description: Erro de validação
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErroPadrao"
+
+  /usuarios/login:
+    post:
+      tags:
+        - usuarios
+      summary: Realizar login e receber token JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login bem-sucedido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          description: Credenciais inválidas
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErroPadrao"
+
+  /usuarios/renovar:
+    post:
+      tags:
+        - usuarios
+      summary: Renovar token JWT
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Token renovado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          description: Token inválido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErroPadrao"
+
+  /usuarios/{id}:
+    delete:
+      tags:
+        - usuarios
+      summary: Excluir usuário pelo ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Usuário removido sem conteúdo
+        "401":
+          description: Token inválido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErroPadrao"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+
+    UsuarioCreate:
+      type: object
+      required:
+        - email
+        - senha
+      properties:
+        email:
+          type: string
+          example: usuario@gmail.com
+        senha:
+          type: string
+          example: abcd1234
+
+    UsuarioResponse:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 671fa8c40e791dd96bd2a922
+        email:
+          type: string
+          example: usuario@gmail.com
+
+    LoginRequest:
+      type: object
+      required:
+        - usuario
+        - senha
+      properties:
+        usuario:
+          type: string
+          example: usuario@gmail.com
+        senha:
+          type: string
+          example: abcd1234
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+
+    ErroPadrao:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: Credenciais inválidas
